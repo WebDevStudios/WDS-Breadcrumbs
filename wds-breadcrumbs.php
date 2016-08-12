@@ -36,6 +36,72 @@ class WDS_Breadcrumbs {
 	protected $post_type = 'post';
 
 	/**
+	 * @var object
+	 */
+	protected $post;
+
+	/**
+	 * Used for the navigation meta for structured data.
+	 * @var int
+	 */
+	private $content_pos = 0;
+
+	/**
+	 * Allow for filtering of the separator value
+	 */
+	public function do_separator() {
+
+		return apply_filters( 'wds_breadcrumbs_separator', $this->separator );
+	}
+
+	/**
+	 * Allow for filtering of the separator value
+	 */
+	public function do_homepage_text() {
+
+		return apply_filters( 'wds_breadcrumbs_homepage_text', $this->homepage_text );
+	}
+
+	private function _itemprop_pos() {
+		return sprintf( '<meta itemprop="position" content="%d" />', $this->content_pos );
+	}
+
+	/**
+	 * Wraps content/links in spans for SEO purposes
+	 *
+	 * @param string $content
+	 * @param string $link
+	 * @link https://developers.google.com/search/docs/data-types/breadcrumbs
+	 *
+	 * @author JayWood
+	 * @return string HTML output
+	 */
+	private function _build_list_item_data( $content = '', $link = '' ) {
+
+		// Positions are base 1, not 0.
+		$this->content_pos++;
+
+		if ( ! empty( $link ) ) {
+			$output = '<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+						<a class="breadcrumb-link" href="%3$s" itemscope itemtype="http://schema.org/Thing" itemprop="item">
+							<span itemprop="name">%1$s</span>
+						</a>
+						' . $this->_itemprop_pos() . '
+					%2$s</li>';
+		} else {
+			// End of the line crumb... no link for you!
+			$output = '<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+						<span itemscope itemtype="http://schema.org/Thing" itemprop="item">
+							<span itemprop="name">%1$s</span>
+						</span>
+						' . $this->_itemprop_pos() . '
+					%2$s</li>';
+		}
+
+		return sprintf( $output, $content, $this->maybe_do_seperator( $link ), $link );
+	}
+
+	/**
 	 * Bake our bread and leave a trail.
 	 *
 	 * @return string  the breadcrumbs
@@ -45,7 +111,7 @@ class WDS_Breadcrumbs {
 		$this->post    = get_post( $post_id );
 
 		// Start baking
-		$output = '';
+		$output = '<ul itemscope itemtype="http://schema.org/BreadcrumbList">';
 
 		/**
 		 * Frst Breadcrumb
@@ -64,14 +130,12 @@ class WDS_Breadcrumbs {
 			} elseif ( is_single() ) {
 
 				$output .= $this->post_crumb();
-
 			}
 
 			/**
 			 * Final Breadcrumb
 			 */
-			$output .= get_the_title();
-
+			$output .= $this->_build_list_item_data( get_the_title() );
 		}
 
 		elseif ( is_day() ) {
@@ -98,7 +162,15 @@ class WDS_Breadcrumbs {
 			$output .= $this->post_type_singular_name();
 		}
 
+		elseif ( is_category() ) {
+			$output .= $this->category_crumbs();
+		}
+
 		elseif ( is_tag() || is_category() || is_archive() ) {
+			if ( is_tax() ) {
+				$output .= $this->post_crumb();
+			}
+
 			$output .= single_term_title( '', false );
 		}
 
@@ -109,6 +181,8 @@ class WDS_Breadcrumbs {
 				$output .= $this->post_type_singular_name();
 			}
 		}
+
+		$output .= '</ul>';
 
 		// Return the concantonated string of breadcrumbs!
 		return $output;
@@ -122,14 +196,19 @@ class WDS_Breadcrumbs {
 	 * @return string         complete url makrup
 	 */
 	private function link_wrap( $link = '', $text = '' ) {
-		return $link ? '<a class="breadcrumb-link" href="' . esc_url( $link ) . '">' . esc_html( $text ) . '</a>' . $this->maybe_do_seperator( $link ) : '';
+
+		if ( $link ) {
+			return $this->_build_list_item_data( $text, $link );
+		}
+
+		return '';
 	}
 
 	/**
 	 * The homepage breadcrumb.
 	 */
 	private function homepage_crumb() {
-		return $this->link_wrap( home_url(), $this->homepage_text );
+		return $this->link_wrap( home_url(), $this->do_homepage_text() );
 	}
 
 	/**
@@ -144,14 +223,14 @@ class WDS_Breadcrumbs {
 
 		// No parents? Then bail...
 		if ( empty( $parents ) || ! is_array( $parents ) ) {
-			return $crumbs;
+			return apply_filters( 'wds_page_crumbs', $crumbs, $this->post_id );
 		}
 
 		foreach ( array_reverse( $parents ) as $parent ) {
 			$crumbs .= $this->link_wrap( get_permalink( $parent ), get_the_title( $parent ) );
 		}
 
-		return $crumbs;
+		return apply_filters( 'wds_page_crumbs', $crumbs, $this->post_id );
 	}
 
 	/**
@@ -190,6 +269,18 @@ class WDS_Breadcrumbs {
 		return $output;
 	}
 
+	private function category_crumbs() {
+		if ( get_option( 'show_on_front' ) != 'page' ) {
+			return single_term_title( '', false );
+		} else {
+			$id = get_option( 'page_for_posts' );
+			$page = get_post( (int) $id );
+			$output = $this->link_wrap( get_permalink( $page->ID ), $page->post_title );
+			$output .= single_term_title( '', false );
+			return $output;
+		}
+	}
+
 	/**
 	 * Maybe get post type singuar name.
 	 *
@@ -203,30 +294,25 @@ class WDS_Breadcrumbs {
 			return $this->post->singular_name;
 		}
 
+		if ( ! isset( $this->post->post_type ) ) {
+			return '';
+		}
 		// Set a custom name based on post type, or just use the singular name
+		$name = '';
 		switch ( $this->post->post_type ) {
 			case 'post':
-				$this->post->singular_name = 'Blog';
-				break;
-			case 'work-portfolio':
-				$this->post->singular_name = 'Portfolio';
-				break;
-			case 'plugins':
-				$this->post->singular_name = 'Plugins';
-				break;
-			case 'books':
-				$this->post->singular_name = 'Books';
-				break;
-			case 'events':
-				$this->post->singular_name = 'Events';
+				$name = 'Blog';
 				break;
 			default:
 				// Get the current post type object
 				$post_type_object = get_post_type_object( $this->post->post_type );
-				$this->post->singular_name = $post_type_object->labels->singular_name;
+				if ( ! is_null( $post_type_object ) && isset( $post_type_object->labels ) && isset( $post_type_object->labels->singular_name ) ) {
+					$name = apply_filters( 'wds_breadcrumbs_singular_name', $post_type_object->labels->singular_name, $post_type_object );
+				}
 				break;
 		}
 
+		$this->post->singular_name = $name;
 		return $this->post->singular_name;
 	}
 
@@ -246,22 +332,10 @@ class WDS_Breadcrumbs {
 		// Set a custom link, or just the default archive link
 		switch ( $this->post->post_type ) {
 			case 'post':
-				$this->post->archive_link = '/blog/';
-				break;
-			case 'work-portfolio':
-				$this->post->archive_link = '/portfolio/';
-				break;
-			case 'team':
-				$this->post->archive_link = '/about/team/';
-				break;
-			case 'plugins':
-				$this->post->archive_link = '/plugins/';
-				break;
-			case 'events':
-				$this->post->archive_link = '/events/';
+				$this->post->archive_link = get_post_type_archive_link( 'post' );
 				break;
 			default:
-				$this->post->archive_link = get_post_type_archive_link( $this->post->post_type );
+				$this->post->archive_link = apply_filters( 'wds_breadcrumbs_post_type_archive_link', get_post_type_archive_link( $this->post->post_type ), $this->post );
 				break;
 		}
 
@@ -277,7 +351,7 @@ class WDS_Breadcrumbs {
 	 * @return string         maybe a seperator...maybe not
 	 */
 	private function maybe_do_seperator( $link ) {
-		return ( $link ) ? $this->separator : '';
+		return ( $link ) ? $this->do_separator() : '';
 	}
 
 }
