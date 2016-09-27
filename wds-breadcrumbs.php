@@ -184,8 +184,18 @@ class WDS_Breadcrumbs {
 
 		$output .= '</ul>';
 
-		// Return the concantonated string of breadcrumbs!
-		return $output;
+		/**
+		 * Filter returned concantonated string of breadcrumbs!
+		 *
+		 * Filter breadcrumbs for the post
+		 *
+		 * @since 1.1
+		 *
+		 * @param         string generated breadcrumbs
+		 * @param         int    ID for the current post
+		 * @param  		  WP_Post post object for the current post
+		 */
+		return apply_filters( 'wds_breadcrumbs_output', $output, $this->post_id, $this->post );
 	}
 
 	/**
