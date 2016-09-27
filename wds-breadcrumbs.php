@@ -76,8 +76,7 @@ class WDS_Breadcrumbs {
 	 * @author JayWood
 	 * @return string HTML output
 	 */
-	private function _build_list_item_data( $content = '', $link = '' ) {
-
+	public function build_list_item_data( $content = '', $link = '' ) {
 		// Positions are base 1, not 0.
 		$this->content_pos++;
 
