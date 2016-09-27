@@ -50,7 +50,6 @@ class WDS_Breadcrumbs {
 	 * Allow for filtering of the separator value
 	 */
 	public function do_separator() {
-
 		return apply_filters( 'wds_breadcrumbs_separator', $this->separator );
 	}
 
@@ -58,7 +57,6 @@ class WDS_Breadcrumbs {
 	 * Allow for filtering of the separator value
 	 */
 	public function do_homepage_text() {
-
 		return apply_filters( 'wds_breadcrumbs_homepage_text', $this->homepage_text );
 	}
 
@@ -134,7 +132,7 @@ class WDS_Breadcrumbs {
 			/**
 			 * Final Breadcrumb
 			 */
-			$output .= $this->_build_list_item_data( get_the_title() );
+			$output .= $this->build_list_item_data( get_the_title() );
 		}
 
 		elseif ( is_day() ) {
@@ -207,7 +205,7 @@ class WDS_Breadcrumbs {
 	private function link_wrap( $link = '', $text = '' ) {
 
 		if ( $link ) {
-			return $this->_build_list_item_data( $text, $link );
+			return $this->build_list_item_data( $text, $link );
 		}
 
 		return '';
@@ -217,7 +215,7 @@ class WDS_Breadcrumbs {
 	 * The homepage breadcrumb.
 	 */
 	private function homepage_crumb() {
-		return $this->link_wrap( home_url(), $this->do_homepage_text() );
+		return apply_filters( 'wds_breadcrumbs_homepage_crumb', $this->link_wrap( home_url(), $this->do_homepage_text() ) );
 	}
 
 	/**
@@ -333,7 +331,7 @@ class WDS_Breadcrumbs {
 	 * @return string the post type archive url
 	 */
 	private function post_type_archive_link() {
-
+		// bail early if archive link is already available
 		if ( isset( $this->post->archive_link ) ) {
 			return $this->post->archive_link;
 		}
