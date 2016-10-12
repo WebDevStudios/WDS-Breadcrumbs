@@ -351,9 +351,9 @@ class WDS_Breadcrumbs {
 	}
 
 	/**
-	 * Maybe get the taxonomy archive link.
+	 * Maybe get the taxonomy archive links.
 	 *
-	 * @return string the taxonomy archive url
+	 * @return string list of taxonomy archive links
 	 */
 	protected function taxonomy_archive_links() {
 		global $wp_query;
