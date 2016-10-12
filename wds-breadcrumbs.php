@@ -165,10 +165,11 @@ class WDS_Breadcrumbs {
 
 		elseif ( is_tag() || is_category() || is_archive() ) {
 			if ( is_tax() ) {
-				$output .= $this->post_crumb();
+				$output .= $this->taxonomy_archive_links();
+			} else {
+				$output .= single_term_title( '', false );
 			}
 
-			$output .= single_term_title( '', false );
 		}
 
 		// When all else fails, we're probably on index.php
@@ -347,6 +348,57 @@ class WDS_Breadcrumbs {
 		}
 
 		return $this->post->archive_link;
+	}
+
+	/**
+	 * Maybe get the taxonomy archive link.
+	 *
+	 * @return string the taxonomy archive url
+	 */
+	protected function taxonomy_archive_links() {
+		global $wp_query;
+
+		// bail early if no taxonomy
+		if ( empty( $wp_query->queried_object->term_id ) ) {
+			return;
+		}
+
+		// hold link output
+		$output = '';
+
+		// get ancestors for term
+		$ancestors = get_ancestors( $wp_query->queried_object->term_id, $wp_query->queried_object->taxonomy );
+
+		// fill ancestors if available
+		if ( ! empty( $ancestors ) ) {
+			// make sure they're in order
+			$ancestors = array_reverse( $ancestors );
+
+			// add terms to breadcrumbs
+			foreach ( (array) $ancestors as $ancestor ) {
+				$term = get_term_by( 
+					'id', 
+					$ancestor, 
+					$wp_query->queried_object->taxonomy
+				);
+
+				// skip if no term
+				if ( empty( $term ) ) {
+					continue;
+				}
+
+				// add term breadcrumb 
+				$output .= $this->build_list_item_data(
+					$term->name,
+					get_term_link( $term->term_id )
+				);
+			}
+		}
+
+		// add term breadcrumb 
+		$output .= $this->build_list_item_data( single_term_title( '', false ) );
+
+		return $output;
 	}
 
 	/**
