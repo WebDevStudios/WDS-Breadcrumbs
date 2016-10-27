@@ -107,6 +107,23 @@ class WDS_Breadcrumbs {
 		$this->post_id = $post_id ? $post_id : get_the_ID();
 		$this->post    = get_post( $post_id );
 
+		/**
+		 * Override output of breadcrumbs before the addtional logic
+		 *
+		 * Filter to override breadcrumbs output before running through logic
+		 *
+		 * @since 1.1
+		 *
+		 * @param         null override for breadcrumb output
+		 * @param         int    ID for the current post
+		 * @param  		  WP_Post post object for the current post
+		 */
+		$override = apply_filters( 'wds_breadcrumbs_output_override', null, $this->post_id, $this->post );
+
+		if ( ! ( null === $override ) ) {
+			return $override;
+		}
+
 		// Start baking
 		$output = '<ul itemscope itemtype="http://schema.org/BreadcrumbList">';
 
@@ -165,10 +182,11 @@ class WDS_Breadcrumbs {
 
 		elseif ( is_tag() || is_category() || is_archive() ) {
 			if ( is_tax() ) {
-				$output .= $this->post_crumb();
+				$output .= $this->taxonomy_archive_links();
+			} else {
+				$output .= single_term_title( '', false );
 			}
 
-			$output .= single_term_title( '', false );
 		}
 
 		// When all else fails, we're probably on index.php
@@ -347,6 +365,57 @@ class WDS_Breadcrumbs {
 		}
 
 		return $this->post->archive_link;
+	}
+
+	/**
+	 * Maybe get the taxonomy archive links.
+	 *
+	 * @return string list of taxonomy archive links
+	 */
+	protected function taxonomy_archive_links() {
+		global $wp_query;
+
+		// bail early if no taxonomy
+		if ( empty( $wp_query->queried_object->term_id ) ) {
+			return;
+		}
+
+		// hold link output
+		$output = '';
+
+		// get ancestors for term
+		$ancestors = get_ancestors( $wp_query->queried_object->term_id, $wp_query->queried_object->taxonomy );
+
+		// fill ancestors if available
+		if ( ! empty( $ancestors ) ) {
+			// make sure they're in order
+			$ancestors = array_reverse( $ancestors );
+
+			// add terms to breadcrumbs
+			foreach ( (array) $ancestors as $ancestor ) {
+				$term = get_term_by( 
+					'id', 
+					$ancestor, 
+					$wp_query->queried_object->taxonomy
+				);
+
+				// skip if no term
+				if ( empty( $term ) ) {
+					continue;
+				}
+
+				// add term breadcrumb 
+				$output .= $this->build_list_item_data(
+					$term->name,
+					get_term_link( $term->term_id )
+				);
+			}
+		}
+
+		// add term breadcrumb 
+		$output .= $this->build_list_item_data( single_term_title( '', false ) );
+
+		return $output;
 	}
 
 	/**
