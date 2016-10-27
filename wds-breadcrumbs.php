@@ -107,23 +107,6 @@ class WDS_Breadcrumbs {
 		$this->post_id = $post_id ? $post_id : get_the_ID();
 		$this->post    = get_post( $post_id );
 
-		/**
-		 * Override output of breadcrumbs before the addtional logic
-		 *
-		 * Filter to override breadcrumbs output before running through logic
-		 *
-		 * @since 1.1
-		 *
-		 * @param         null override for breadcrumb output
-		 * @param         int    ID for the current post
-		 * @param  		  WP_Post post object for the current post
-		 */
-		$override = apply_filters( 'wds_breadcrumbs_output_override', null, $this->post_id, $this->post );
-
-		if ( ! ( null === $override ) ) {
-			return $override;
-		}
-
 		// Start baking
 		$output = '<ul itemscope itemtype="http://schema.org/BreadcrumbList">';
 
