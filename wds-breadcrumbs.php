@@ -232,7 +232,7 @@ class WDS_Breadcrumbs {
 	/**
 	 * The homepage breadcrumb.
 	 */
-	private function homepage_crumb() {
+	public function homepage_crumb() {
 		return apply_filters( 'wds_breadcrumbs_homepage_crumb', $this->link_wrap( home_url(), $this->do_homepage_text() ) );
 	}
 
