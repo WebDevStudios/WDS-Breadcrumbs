@@ -221,12 +221,12 @@ class WDS_Breadcrumbs {
 	 * @return string         complete url makrup
 	 */
 	private function link_wrap( $link = '', $text = '' ) {
-
-		if ( $link ) {
-			return $this->build_list_item_data( $text, $link );
+		// bail early if no link
+		if ( empty( $link ) ) {
+			return '';
 		}
 
-		return '';
+		return $this->build_list_item_data( $text, $link );
 	}
 
 	/**
@@ -294,8 +294,13 @@ class WDS_Breadcrumbs {
 		return $output;
 	}
 
+	/**
+	 * Build the category breadcrumb
+	 * 
+	 * @return string the category breadcrumb
+	 */
 	private function category_crumbs() {
-		if ( get_option( 'show_on_front' ) != 'page' ) {
+		if ( ! ( 'page' === get_option( 'show_on_front' ) ) ) {
 			return single_term_title( '', false );
 		} else {
 			$id = get_option( 'page_for_posts' );
@@ -314,16 +319,19 @@ class WDS_Breadcrumbs {
 	 * @return string the post type singular name
 	 */
 	private function post_type_singular_name() {
-
+		// bail early if singular name is available
 		if ( isset( $this->post->singular_name ) ) {
 			return $this->post->singular_name;
 		}
 
+		// bail early is post_type is no available
 		if ( ! isset( $this->post->post_type ) ) {
 			return '';
 		}
+
 		// Set a custom name based on post type, or just use the singular name
 		$name = '';
+
 		switch ( $this->post->post_type ) {
 			case 'post':
 				$name = 'Blog';
@@ -360,7 +368,12 @@ class WDS_Breadcrumbs {
 				$this->post->archive_link = get_post_type_archive_link( 'post' );
 				break;
 			default:
-				$this->post->archive_link = apply_filters( 'wds_breadcrumbs_post_type_archive_link', get_post_type_archive_link( $this->post->post_type ), $this->post );
+				$this->post->archive_link = apply_filters( 
+					'wds_breadcrumbs_post_type_archive_link', 
+					get_post_type_archive_link( $this->post->post_type ), 
+					$this->post 
+				);
+
 				break;
 		}
 
@@ -404,7 +417,7 @@ class WDS_Breadcrumbs {
 					continue;
 				}
 
-				// add term breadcrumb 
+				// add ancestor term breadcrumb 
 				$output .= $this->build_list_item_data(
 					$term->name,
 					get_term_link( $term->term_id )
@@ -412,7 +425,7 @@ class WDS_Breadcrumbs {
 			}
 		}
 
-		// add term breadcrumb 
+		// add original term breadcrumb 
 		$output .= $this->build_list_item_data( single_term_title( '', false ) );
 
 		return $output;
