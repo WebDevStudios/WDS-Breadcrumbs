@@ -15,29 +15,42 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ *  Start Plugin Class.
+ */
 class WDS_Breadcrumbs {
 
 	/**
+	 * Defines the separator icon.
+	 *
 	 * @var string the separator.
 	 */
 	protected $separator = ' &gt; ';
 
 	/**
+	 * You can define the text to show on the homepage.
+	 *
 	 * @var string the homepage text.
 	 */
 	protected $homepage_text = 'WebDevStudios.com';
 
 	/**
+	 * Breadcumb origin.
+	 *
 	 * @var integer Post ID whose breadcrumbs we should display.
 	 */
 	protected $post_id = 0;
 
 	/**
+	 * Define your post type here.
+	 *
 	 * @var integer Post type whose breadcrumbs we should display.
 	 */
 	protected $post_type = 'post';
 
 	/**
+	 * Global post.
+	 *
 	 * @var object
 	 */
 	protected $post;
@@ -63,6 +76,9 @@ class WDS_Breadcrumbs {
 		return apply_filters( 'wds_breadcrumbs_homepage_text', $this->homepage_text );
 	}
 
+	/**
+	 * Define meta itemprop content.
+	 */
 	private function _itemprop_pos() {
 		return sprintf( '<meta itemprop="position" content="%d" />', $this->content_pos );
 	}
@@ -70,8 +86,8 @@ class WDS_Breadcrumbs {
 	/**
 	 * Wraps content/links in spans for SEO purposes.
 	 *
-	 * @param string $content.
-	 * @param string $link.
+	 * @param string $content get breadcrumb text.
+	 * @param string $link get breadcrumb text url.
 	 * @link https://developers.google.com/search/docs/data-types/breadcrumbs.
 	 *
 	 * @author JayWood.
@@ -104,6 +120,7 @@ class WDS_Breadcrumbs {
 	/**
 	 * Bake our bread and leave a trail.
 	 *
+	 * @param  string $post_id post number id.
 	 * @return string  the breadcrumbs.
 	 */
 	public function do_breadcrumbs( $post_id = 0 ) {
@@ -153,55 +170,42 @@ class WDS_Breadcrumbs {
 			 * Final Breadcrumb
 			 */
 			$output .= $this->build_list_item_data( get_the_title() );
-		}
 
-		elseif ( is_home() ) {
+		} elseif ( is_home() ) {
 			$blog_title = get_the_title( get_option( 'page_for_posts', true ) );
 			$output .= $this->build_list_item_data( $blog_title );
-		}
 
-		elseif ( is_day() ) {
+		} elseif ( is_day() ) {
 			$output .= $this->day_crumbs();
-		}
 
-		elseif ( is_month() ) {
+		} elseif ( is_month() ) {
 			$output .= $this->month_crumbs();
-		}
 
-		elseif ( is_year() ) {
+		} elseif ( is_year() ) {
 			$output .= get_the_time( 'Y' );
-		}
 
-		elseif ( is_author() ) {
+		} elseif ( is_author() ) {
 			$author = get_the_author();
 			$output .= $this->build_list_item_data( $author );
-		}
 
-		elseif ( is_search() ) {
+		} elseif ( is_search() ) {
 			$search_results = __( 'Searched For: ', 'wds7' ) . get_search_query();
 			$output .= $this->build_list_item_data( $search_results );
-		}
 
-		elseif ( is_post_type_archive() ) {
+		} elseif ( is_post_type_archive() ) {
 			$output .= $this->post_type_singular_name();
-		}
 
-		elseif ( is_category() ) {
+		} elseif ( is_category() ) {
 			$output .= $this->category_crumbs();
-		}
 
-		elseif ( is_tag() || is_category() || is_archive() ) {
+		} elseif ( is_tag() || is_category() || is_archive() ) {
 			if ( is_tax() ) {
 				$output .= $this->taxonomy_archive_links();
 			} else {
 				$output .= single_term_title( '', false );
 			}
-
-		}
-
-		// When all else fails, we're probably on index.php.
-		else {
-
+		} else {
+			// When all else fails, we're probably on index.php.
 			if ( ! is_home() || ! is_front_page() ) {
 				$output .= $this->post_type_singular_name();
 			}
@@ -304,8 +308,11 @@ class WDS_Breadcrumbs {
 		return $output;
 	}
 
+	/**
+	 * Output for Category Pages.
+	 */
 	private function category_crumbs() {
-		if ( get_option( 'show_on_front' ) != 'page' ) {
+		if ( get_option( 'show_on_front' ) != 'page' ) { // WPCS: Loose comparison ok.
 			return single_term_title( '', false );
 		} else {
 			$id = get_option( 'page_for_posts' );
@@ -440,5 +447,4 @@ class WDS_Breadcrumbs {
 	private function maybe_do_separator( $link ) {
 		return ( $link ) ? $this->do_separator() : '';
 	}
-
 }
