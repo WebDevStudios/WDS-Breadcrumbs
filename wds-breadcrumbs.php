@@ -337,6 +337,19 @@ class WDS_Breadcrumbs {
 				break;
 		}
 
+		/**
+		 * Update the name for a post type in breadcrumbs.
+		 *
+		 * Filter post type name in breadcrumbs.
+		 *
+		 * @since 1.1
+		 *
+		 * @param         string  The name for the post type.
+		 * @param         int     ID for the current post.
+		 * @param  		  WP_Post Post object for the current post.
+		 */
+		$name = apply_filters( 'wds_breadcrumbs_post_type_name', $name, $this->post_id, $this->post );
+
 		$this->post->singular_name = $name;
 		return $this->post->singular_name;
 	}
