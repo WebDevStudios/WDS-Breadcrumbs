@@ -220,19 +220,19 @@ class WDS_Breadcrumbs {
 	 * @param  string  $text  the linked text
 	 * @return string         complete url makrup
 	 */
-	private function link_wrap( $link = '', $text = '' ) {
-
-		if ( $link ) {
-			return $this->build_list_item_data( $text, $link );
+	protected function link_wrap( $link = '', $text = '' ) {
+		// bail early if no link
+		if ( empty( $link ) ) {
+			return '';
 		}
 
-		return '';
+		return $this->build_list_item_data( $text, $link );
 	}
 
 	/**
 	 * The homepage breadcrumb.
 	 */
-	private function homepage_crumb() {
+	public function homepage_crumb() {
 		return apply_filters( 'wds_breadcrumbs_homepage_crumb', $this->link_wrap( home_url(), $this->do_homepage_text() ) );
 	}
 
@@ -241,7 +241,7 @@ class WDS_Breadcrumbs {
 	 *
 	 * @return string the page breadcrumb
 	 */
-	private function page_crumbs() {
+	public function page_crumbs() {
 		// Get an array of post ancestors
 		$parents = get_post_ancestors( $this->post_id );
 		$crumbs = '';
@@ -286,7 +286,7 @@ class WDS_Breadcrumbs {
 	 *
 	 * @return string the post breadcrumb
 	 */
-	private function month_crumbs() {
+	public function month_crumbs() {
 		$year = get_the_time( 'Y' );
 		$output = $this->link_wrap( get_year_link( $year ), $year );
 		$output .= get_the_time( 'F' );
@@ -294,8 +294,13 @@ class WDS_Breadcrumbs {
 		return $output;
 	}
 
-	private function category_crumbs() {
-		if ( get_option( 'show_on_front' ) != 'page' ) {
+	/**
+	 * Build the category breadcrumb
+	 * 
+	 * @return string the category breadcrumb
+	 */
+	public function category_crumbs() {
+		if ( ! ( 'page' === get_option( 'show_on_front' ) ) ) {
 			return single_term_title( '', false );
 		} else {
 			$id = get_option( 'page_for_posts' );
@@ -361,7 +366,7 @@ class WDS_Breadcrumbs {
 	 *
 	 * @return string the post type archive url
 	 */
-	private function post_type_archive_link() {
+	public function post_type_archive_link() {
 		// bail early if archive link is already available
 		if ( isset( $this->post->archive_link ) ) {
 			return $this->post->archive_link;
@@ -385,7 +390,7 @@ class WDS_Breadcrumbs {
 	 *
 	 * @return string list of taxonomy archive links
 	 */
-	protected function taxonomy_archive_links() {
+	public function taxonomy_archive_links() {
 		global $wp_query;
 
 		// bail early if no taxonomy
@@ -439,7 +444,7 @@ class WDS_Breadcrumbs {
 	 * @param  string  $link  a link to the parent item
 	 * @return string         maybe a seperator...maybe not
 	 */
-	private function maybe_do_seperator( $link ) {
+	protected function maybe_do_seperator( $link ) {
 		return ( $link ) ? $this->do_separator() : '';
 	}
 
