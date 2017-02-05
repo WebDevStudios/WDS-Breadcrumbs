@@ -119,7 +119,7 @@ class WDS_Breadcrumbs {
 	 */
 	public function build_list_item_data( $content = '', $link = '' ) {
 		// Positions are base 1, not 0.
-		$this->content_pos++;
+		++$this->content_pos;
 
 		if ( ! empty( $link ) ) {
 			$output = '<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
@@ -342,7 +342,7 @@ class WDS_Breadcrumbs {
 	 *
 	 * @return string the post type singular name
 	 */
-	private function post_type_singular_name() {
+	protected function post_type_singular_name() {
 		// Bail early if singular name is available.
 		if ( isset( $this->post->singular_name ) ) {
 			return $this->post->singular_name;
@@ -479,5 +479,4 @@ class WDS_Breadcrumbs {
 	protected function maybe_do_seperator( $link ) {
 		return ( $link ) ? $this->do_separator() : '';
 	}
-
 }
