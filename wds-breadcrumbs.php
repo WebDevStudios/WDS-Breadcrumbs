@@ -3,7 +3,7 @@
  * Plugin Name: WDS Breadcrumbs
  * Plugin URI: http://webdevstudios.com
  * Description: Simple breadcrumbs for WDS7
- * Version: 1.0
+ * Version: 1.1
  * Author: WebDevStudios
  * Author URI: http://webdevstudios.com
  *
@@ -73,7 +73,7 @@ class WDS_Breadcrumbs {
 		 *
 		 * Filter to update the separator between breadcrumbs.
 		 *
-		 * @since NEXT
+		 * @since 1.0
 		 *
 		 * @param         string Default homepage text.
 		 */
@@ -91,7 +91,7 @@ class WDS_Breadcrumbs {
 		 *
 		 * Filter to update the text for the homepage breadcrumb
 		 *
-		 * @since NEXT
+		 * @since 1.0
 		 *
 		 * @param         string Default homepage text.
 		 */
