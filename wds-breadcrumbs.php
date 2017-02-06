@@ -101,6 +101,8 @@ class WDS_Breadcrumbs {
 	/**
 	 * Add metadata for the breadcrumb.
 	 *
+	 * @since 1.0
+	 *
 	 * @return string Markup for metadata.
 	 */
 	protected function _itemprop_pos() {
@@ -158,9 +160,9 @@ class WDS_Breadcrumbs {
 		 *
 		 * @since 1.1
 		 *
-		 * @param         null override for breadcrumb output
-		 * @param         int    ID for the current post
-		 * @param  		  WP_Post post object for the current post
+		 * @param null    Override for breadcrumb output.
+		 * @param int     ID for the current post.
+		 * @param WP_Post Post object for the current post.
 		 */
 		$override = apply_filters( 'wds_breadcrumbs_output_override', null, $this->post_id, $this->post );
 
@@ -175,23 +177,16 @@ class WDS_Breadcrumbs {
 		// First Breadcrumb.
 		$output .= $this->homepage_crumb();
 
-		/**
-		 * Secondary Breadcrumbs
-		 */
+		// Secondary Breadcrumbs.
 		if ( is_singular() ) {
 
 			if ( is_page() ) {
-
 				$output .= $this->page_crumbs();
-
 			} elseif ( is_single() ) {
-
 				$output .= $this->post_crumb();
 			}
 
-			/**
-			 * Final Breadcrumb
-			 */
+			 // Final Breadcrumb.
 			$output .= $this->build_list_item_data( get_the_title() );
 		} elseif ( is_day() ) {
 			$output .= $this->day_crumbs();
@@ -227,9 +222,9 @@ class WDS_Breadcrumbs {
 		 *
 		 * @since 1.1
 		 *
-		 * @param         string generated breadcrumbs
-		 * @param         int    ID for the current post
-		 * @param  		  WP_Post post object for the current post
+		 * @param string  Generated breadcrumbs.
+		 * @param int     ID for the current post.
+		 * @param WP_Post Post object for the current post.
 		 */
 		return apply_filters( 'wds_breadcrumbs_output', $output, $this->post_id, $this->post );
 	}
@@ -256,6 +251,15 @@ class WDS_Breadcrumbs {
 	 * @return string Markup for the homepage crumb.
 	 */
 	public function homepage_crumb() {
+		/**
+		 * Modify the homepage crumb markup.
+		 *
+		 * Filter markup for the homepage crumb.
+		 *
+		 * @since 1.1
+		 *
+		 * @param string Current homepage crumb markup.
+		 */
 		return apply_filters( 'wds_breadcrumbs_homepage_crumb', $this->link_wrap( home_url(), $this->do_homepage_text() ) );
 	}
 
@@ -271,6 +275,16 @@ class WDS_Breadcrumbs {
 
 		// No parents? Then bail...
 		if ( empty( $parents ) || ! is_array( $parents ) ) {
+			/**
+			 * Modify the page breadcrumb markup.
+			 *
+			 * Filter markup for the page breadcrumbs.
+			 *
+			 * @since 1.0
+			 *
+			 * @param string Current page crumb markup.
+			 * @param int    ID of the current post.
+			 */
 			return apply_filters( 'wds_page_crumbs', $crumbs, $this->post_id );
 		}
 
@@ -279,6 +293,16 @@ class WDS_Breadcrumbs {
 			$crumbs .= $this->link_wrap( get_permalink( $parent ), get_the_title( $parent ) );
 		}
 
+		/**
+		 * Modify the page breadcrumb markup.
+		 *
+		 * Filter markup for the page breadcrumbs.
+		 *
+		 * @since 1.0
+		 *
+		 * @param string Current page crumb markup.
+		 * @param int    ID of the current post.
+		 */
 		return apply_filters( 'wds_page_crumbs', $crumbs, $this->post_id );
 	}
 
@@ -405,6 +429,16 @@ class WDS_Breadcrumbs {
 				$this->post->archive_link = get_post_type_archive_link( 'post' );
 				break;
 			default:
+				/**
+				 * Update the post type archive link.
+				 *
+				 * Filter post type archive link in breadcrumbs.
+				 *
+				 * @since 1.0
+				 *
+				 * @param         string  Link for the post type archive.
+				 * @param  		  WP_Post Post object for the current post.
+				 */
 				$this->post->archive_link = apply_filters(
 					'wds_breadcrumbs_post_type_archive_link',
 					get_post_type_archive_link( $this->post->post_type ),
