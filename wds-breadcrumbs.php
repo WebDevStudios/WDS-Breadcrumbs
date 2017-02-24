@@ -3,11 +3,11 @@
  * Plugin Name: WDS Breadcrumbs
  * Plugin URI: http://webdevstudios.com
  * Description: Simple breadcrumbs for WDS7
- * Version: 1.0.1
+ * Version: 1.1
  * Author: WebDevStudios
  * Author URI: http://webdevstudios.com
  *
- * @package The Sports Geek
+ * @package  WDS Breadcrumbs
  */
 
 // Exit if accessed directly.
@@ -16,40 +16,40 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- *  Start Plugin Class.
+ * Class to generate breadcrumbs for the current post/archive/page.
  */
 class WDS_Breadcrumbs {
 
 	/**
-	 * Defines the separator icon.
+	 * Default homepage separator.
 	 *
-	 * @var string the separator.
+	 * @var string the separator
 	 */
 	protected $separator = ' &gt; ';
 
 	/**
-	 * You can define the text to show on the homepage.
+	 * Default homepage text.
 	 *
-	 * @var string the homepage text.
+	 * @var string the homepage text
 	 */
 	protected $homepage_text = 'WebDevStudios.com';
 
 	/**
-	 * Breadcumb origin.
+	 * The current post id.
 	 *
-	 * @var integer Post ID whose breadcrumbs we should display.
+	 * @var integer Post ID whose breadcrumbs we should display
 	 */
 	protected $post_id = 0;
 
 	/**
-	 * Define your post type here.
+	 * The curent post type.
 	 *
-	 * @var integer Post type whose breadcrumbs we should display.
+	 * @var string Post type whose breadcrumbs we should display.
 	 */
 	protected $post_type = 'post';
 
 	/**
-	 * Global post.
+	 * The current post object.
 	 *
 	 * @var object
 	 */
@@ -60,42 +60,69 @@ class WDS_Breadcrumbs {
 	 *
 	 * @var int
 	 */
-	private $content_pos = 0;
+	protected $content_pos = 0;
 
 	/**
 	 * Allow for filtering of the separator value.
+	 *
+	 * @return  string Breadcrumb separator.
 	 */
 	public function do_separator() {
+		/**
+		 * Adjust the breadcrumb separator.
+		 *
+		 * Filter to update the separator between breadcrumbs.
+		 *
+		 * @since 1.0
+		 *
+		 * @param         string Default homepage text.
+		 */
 		return apply_filters( 'wds_breadcrumbs_separator', $this->separator );
 	}
 
 	/**
 	 * Allow for filtering of the separator value.
+	 *
+	 * @return string Homepage Text.
 	 */
 	public function do_homepage_text() {
+		/**
+		 * Adjust the breadcrumb homepage text.
+		 *
+		 * Filter to update the text for the homepage breadcrumb
+		 *
+		 * @since 1.0
+		 *
+		 * @param         string Default homepage text.
+		 */
 		return apply_filters( 'wds_breadcrumbs_homepage_text', $this->homepage_text );
 	}
 
-	/**
+	/*
 	 * Define meta itemprop content.
+	 * Add metadata for the breadcrumb.
+	 *
+	 * @since 1.0
+	 *
+	 * @return string Markup for metadata.
 	 */
-	private function _itemprop_pos() {
+	protected function _itemprop_pos() {
 		return sprintf( '<meta itemprop="position" content="%d" />', $this->content_pos );
 	}
 
 	/**
 	 * Wraps content/links in spans for SEO purposes.
 	 *
-	 * @param string $content get breadcrumb text.
-	 * @param string $link get breadcrumb text url.
-	 * @link https://developers.google.com/search/docs/data-types/breadcrumbs.
+	 * @param string $content Text for the breadcrumb.
+	 * @param string $link 	  URL for the breadcrumb.
+	 * @link https://developers.google.com/search/docs/data-types/breadcrumbs
 	 *
 	 * @author JayWood.
 	 * @return string HTML output.
 	 */
 	public function build_list_item_data( $content = '', $link = '' ) {
 		// Positions are base 1, not 0.
-		$this->content_pos++;
+		++$this->content_pos;
 
 		if ( ! empty( $link ) ) {
 			$output = '<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
@@ -120,8 +147,8 @@ class WDS_Breadcrumbs {
 	/**
 	 * Bake our bread and leave a trail.
 	 *
-	 * @param  string $post_id post number id.
-	 * @return string  the breadcrumbs.
+	 * @param  int $post_id The ID of the post to build the breadcrumb(s) for.
+	 * @return string  the breadcrumbs
 	 */
 	public function do_breadcrumbs( $post_id = 0 ) {
 		$this->post_id = $post_id ? $post_id : get_the_ID();
@@ -134,12 +161,13 @@ class WDS_Breadcrumbs {
 		 *
 		 * @since 1.1
 		 *
-		 * @param         null override for breadcrumb output.
-		 * @param         int    ID for the current post.
-		 * @param  		  WP_Post post object for the current post.
+		 * @param null    Override for breadcrumb output.
+		 * @param int     ID for the current post.
+		 * @param WP_Post Post object for the current post.
 		 */
 		$override = apply_filters( 'wds_breadcrumbs_output_override', null, $this->post_id, $this->post );
 
+		// Bail early breadcrumbs are being overridden.
 		if ( ! ( null === $override ) ) {
 			return $override;
 		}
@@ -147,28 +175,19 @@ class WDS_Breadcrumbs {
 		// Start baking.
 		$output = '<ul class="site-breadcrumbs" itemscope itemtype="http://schema.org/BreadcrumbList">';
 
-		/**
-		 * Frst Breadcrumb.
-		 */
+		// First Breadcrumb.
 		$output .= $this->homepage_crumb();
 
-		/**
-		 * Secondary Breadcrumbs.
-		 */
+		// Secondary Breadcrumbs.
 		if ( is_singular() ) {
 
 			if ( is_page() ) {
-
 				$output .= $this->page_crumbs();
-
 			} elseif ( is_single() ) {
-
 				$output .= $this->post_crumb();
 			}
 
-			/**
-			 * Final Breadcrumb
-			 */
+			 // Final Breadcrumb.
 			$output .= $this->build_list_item_data( get_the_title() );
 
 		} elseif ( is_home() ) {
@@ -189,14 +208,30 @@ class WDS_Breadcrumbs {
 			$output .= $this->build_list_item_data( $author );
 
 		} elseif ( is_search() ) {
-			$search_results = __( 'Searched For: ', 'wds7' ) . get_search_query();
+			$search_results = __( 'Searched For: ', 'wds8' ) . get_search_query();
 			$output .= $this->build_list_item_data( $search_results );
 
 		} elseif ( is_post_type_archive() ) {
 			$output .= $this->post_type_singular_name();
 
-		} elseif ( is_category() ) {
-			$output .= $this->category_crumbs();
+		} elseif ( is_day() ) {
+			$output .= $this->day_crumbs();
+
+		} elseif ( is_month() ) {
+			$output .= $this->month_crumbs();
+
+		} elseif ( is_year() ) {
+			$output .= get_the_time( 'Y' );
+
+		} elseif ( is_author() ) {
+			$output .= get_the_author();
+
+		} elseif ( is_search() ) {
+			$search_results = __( 'Searched For: ', 'wds8' ) . get_search_query();
+			$output .= $this->build_list_item_data( $search_results );
+
+		} elseif ( is_post_type_archive() ) {
+			$output .= $this->post_type_singular_name();
 
 		} elseif ( is_tag() || is_category() || is_archive() ) {
 			if ( is_tax() ) {
@@ -204,6 +239,9 @@ class WDS_Breadcrumbs {
 			} else {
 				$output .= single_term_title( '', false );
 			}
+		} elseif ( is_404() ) {
+			// Do nothing on 404s.
+			$output = '';
 		} else {
 			// When all else fails, we're probably on index.php.
 			if ( ! is_home() || ! is_front_page() ) {
@@ -211,6 +249,7 @@ class WDS_Breadcrumbs {
 			}
 		}
 
+		// Close the breadcrumbs.
 		$output .= '</ul>';
 
 		/**
@@ -220,9 +259,9 @@ class WDS_Breadcrumbs {
 		 *
 		 * @since 1.1
 		 *
-		 * @param         string generated breadcrumbs.
-		 * @param         int    ID for the current post.
-		 * @param  		  WP_Post post object for the current post.
+		 * @param string  Generated breadcrumbs.
+		 * @param int     ID for the current post.
+		 * @param WP_Post Post object for the current post.
 		 */
 		return apply_filters( 'wds_breadcrumbs_output', $output, $this->post_id, $this->post );
 	}
@@ -230,23 +269,34 @@ class WDS_Breadcrumbs {
 	/**
 	 * HTML markup wrapper for breadcrumb link.
 	 *
-	 * @param  string $link  the link.
-	 * @param  string $text  the linked text.
-	 * @return string         complete url makrup.
+	 * @param  string $link  The link.
+	 * @param  string $text  The linked text.
+	 * @return string        Complete url markup.
 	 */
-	private function link_wrap( $link = '', $text = '' ) {
-
-		if ( $link ) {
-			return $this->build_list_item_data( $text, $link );
+	protected function link_wrap( $link = '', $text = '' ) {
+		// Bail early if no link.
+		if ( empty( $link ) ) {
+			return '';
 		}
 
-		return '';
+		return $this->build_list_item_data( $text, $link );
 	}
 
 	/**
 	 * The homepage breadcrumb.
+	 *
+	 * @return string Markup for the homepage crumb.
 	 */
-	private function homepage_crumb() {
+	public function homepage_crumb() {
+		/**
+		 * Modify the homepage crumb markup.
+		 *
+		 * Filter markup for the homepage crumb.
+		 *
+		 * @since 1.1
+		 *
+		 * @param string Current homepage crumb markup.
+		 */
 		return apply_filters( 'wds_breadcrumbs_homepage_crumb', $this->link_wrap( home_url(), $this->do_homepage_text() ) );
 	}
 
@@ -255,20 +305,41 @@ class WDS_Breadcrumbs {
 	 *
 	 * @return string the page breadcrumb.
 	 */
-	private function page_crumbs() {
+	public function page_crumbs() {
 		// Get an array of post ancestors.
 		$parents = get_post_ancestors( $this->post_id );
 		$crumbs = '';
 
 		// No parents? Then bail...
 		if ( empty( $parents ) || ! is_array( $parents ) ) {
+			/**
+			 * Modify the page breadcrumb markup.
+			 *
+			 * Filter markup for the page breadcrumbs.
+			 *
+			 * @since 1.0
+			 *
+			 * @param string Current page crumb markup.
+			 * @param int    ID of the current post.
+			 */
 			return apply_filters( 'wds_page_crumbs', $crumbs, $this->post_id );
 		}
 
+		// Loop through parents and add to crumbs.
 		foreach ( array_reverse( $parents ) as $parent ) {
 			$crumbs .= $this->link_wrap( get_permalink( $parent ), get_the_title( $parent ) );
 		}
 
+		/**
+		 * Modify the page breadcrumb markup.
+		 *
+		 * Filter markup for the page breadcrumbs.
+		 *
+		 * @since 1.0
+		 *
+		 * @param string Current page crumb markup.
+		 * @param int    ID of the current post.
+		 */
 		return apply_filters( 'wds_page_crumbs', $crumbs, $this->post_id );
 	}
 
@@ -277,7 +348,7 @@ class WDS_Breadcrumbs {
 	 *
 	 * @return string the post breadcrumb.
 	 */
-	private function post_crumb() {
+	protected function post_crumb() {
 		return $this->link_wrap( $this->post_type_archive_link(), $this->post_type_singular_name() );
 	}
 
@@ -286,7 +357,7 @@ class WDS_Breadcrumbs {
 	 *
 	 * @return string the post breadcrumb.
 	 */
-	private function day_crumbs() {
+	protected function day_crumbs() {
 		$year = get_the_time( 'Y' );
 		$output = $this->link_wrap( get_year_link( $year ), $year );
 		$output .= $this->link_wrap( get_month_link( $year, get_the_time( 'm' ) ), get_the_time( 'F' ) );
@@ -300,7 +371,7 @@ class WDS_Breadcrumbs {
 	 *
 	 * @return string the post breadcrumb.
 	 */
-	private function month_crumbs() {
+	public function month_crumbs() {
 		$year = get_the_time( 'Y' );
 		$output = $this->link_wrap( get_year_link( $year ), $year );
 		$output .= get_the_time( 'F' );
@@ -309,10 +380,12 @@ class WDS_Breadcrumbs {
 	}
 
 	/**
-	 * Output for Category Pages.
+	 * Build the category breadcrumb
+	 *
+	 * @return string the category breadcrumb.
 	 */
-	private function category_crumbs() {
-		if ( get_option( 'show_on_front' ) != 'page' ) { // WPCS: Loose comparison ok.
+	public function category_crumbs() {
+		if ( ! ( 'page' === get_option( 'show_on_front' ) ) ) {
 			return single_term_title( '', false );
 		} else {
 			$id = get_option( 'page_for_posts' );
@@ -331,17 +404,20 @@ class WDS_Breadcrumbs {
 	 *
 	 * @return string the post type singular name.
 	 */
-	private function post_type_singular_name() {
-
+	protected function post_type_singular_name() {
+		// Bail early if singular name is available.
 		if ( isset( $this->post->singular_name ) ) {
 			return $this->post->singular_name;
 		}
 
+		// Bail early is post_type is no available.
 		if ( ! isset( $this->post->post_type ) ) {
 			return '';
 		}
+
 		// Set a custom name based on post type, or just use the singular name.
 		$name = '';
+
 		switch ( $this->post->post_type ) {
 			case 'post':
 				$name = 'Blog';
@@ -355,6 +431,19 @@ class WDS_Breadcrumbs {
 				break;
 		}
 
+		/**
+		 * Update the name for a post type in breadcrumbs.
+		 *
+		 * Filter post type name in breadcrumbs.
+		 *
+		 * @since 1.1
+		 *
+		 * @param         string  The name for the post type.
+		 * @param         int     ID for the current post.
+		 * @param  		  WP_Post Post object for the current post.
+		 */
+		$name = apply_filters( 'wds_breadcrumbs_post_type_name', $name, $this->post_id, $this->post );
+
 		$this->post->singular_name = $name;
 		return $this->post->singular_name;
 	}
@@ -366,7 +455,7 @@ class WDS_Breadcrumbs {
 	 *
 	 * @return string the post type archive url.
 	 */
-	private function post_type_archive_link() {
+	public function post_type_archive_link() {
 		// Bail early if archive link is already available.
 		if ( isset( $this->post->archive_link ) ) {
 			return $this->post->archive_link;
@@ -378,7 +467,22 @@ class WDS_Breadcrumbs {
 				$this->post->archive_link = get_post_type_archive_link( 'post' );
 				break;
 			default:
-				$this->post->archive_link = apply_filters( 'wds_breadcrumbs_post_type_archive_link', get_post_type_archive_link( $this->post->post_type ), $this->post );
+				/**
+				 * Update the post type archive link.
+				 *
+				 * Filter post type archive link in breadcrumbs.
+				 *
+				 * @since 1.0
+				 *
+				 * @param         string  Link for the post type archive.
+				 * @param  		  WP_Post Post object for the current post.
+				 */
+				$this->post->archive_link = apply_filters(
+					'wds_breadcrumbs_post_type_archive_link',
+					get_post_type_archive_link( $this->post->post_type ),
+					$this->post
+				);
+
 				break;
 		}
 
@@ -390,7 +494,7 @@ class WDS_Breadcrumbs {
 	 *
 	 * @return string list of taxonomy archive links.
 	 */
-	protected function taxonomy_archive_links() {
+	public function taxonomy_arcshive_links() {
 		global $wp_query;
 
 		// Bail early if no taxonomy.
@@ -406,7 +510,7 @@ class WDS_Breadcrumbs {
 
 		// Fill ancestors if available.
 		if ( ! empty( $ancestors ) ) {
-			// make sure they're in order.
+			// Make sure they're in order.
 			$ancestors = array_reverse( $ancestors );
 
 			// Add terms to breadcrumbs.
@@ -422,7 +526,7 @@ class WDS_Breadcrumbs {
 					continue;
 				}
 
-				// Add term breadcrumb.
+				// Add ancestor term breadcrumb.
 				$output .= $this->build_list_item_data(
 					$term->name,
 					get_term_link( $term->term_id )
@@ -430,7 +534,7 @@ class WDS_Breadcrumbs {
 			}
 		}
 
-		// Add term breadcrumb.
+		// Add original term breadcrumb.
 		$output .= $this->build_list_item_data( single_term_title( '', false ) );
 
 		return $output;
@@ -441,10 +545,10 @@ class WDS_Breadcrumbs {
 	 *
 	 * Only return a separator if there is a parent link.
 	 *
-	 * @param  string $link  a link to the parent item.
-	 * @return string         maybe a separator...maybe not.
+	 * @param  string $link  Link to the parent item.
+	 * @return string         maybe a seperator...maybe not
 	 */
-	private function maybe_do_separator( $link ) {
+	protected function maybe_do_seperator( $link ) {
 		return ( $link ) ? $this->do_separator() : '';
 	}
 }
