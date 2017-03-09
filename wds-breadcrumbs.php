@@ -142,6 +142,7 @@ class WDS_Breadcrumbs {
 		}
 
 		return sprintf( $output, $content, $this->maybe_do_separator( $link ), $link );
+
 	}
 
 	/**
@@ -194,23 +195,6 @@ class WDS_Breadcrumbs {
 			$blog_title = get_the_title( get_option( 'page_for_posts', true ) );
 			$output .= $this->build_list_item_data( $blog_title );
 
-		} elseif ( is_day() ) {
-			$output .= $this->day_crumbs();
-
-		} elseif ( is_month() ) {
-			$output .= $this->month_crumbs();
-
-		} elseif ( is_year() ) {
-			$output .= get_the_time( 'Y' );
-
-		} elseif ( is_author() ) {
-			$author = get_the_author();
-			$output .= $this->build_list_item_data( $author );
-
-		} elseif ( is_search() ) {
-			$search_results = __( 'Searched For: ', 'wds8' ) . get_search_query();
-			$output .= $this->build_list_item_data( $search_results );
-
 		} elseif ( is_post_type_archive() ) {
 			$output .= $this->post_type_singular_name();
 
@@ -237,7 +221,7 @@ class WDS_Breadcrumbs {
 			if ( is_tax() ) {
 				$output .= $this->taxonomy_archive_links();
 			} else {
-				$output .= single_term_title( '', false );
+				$output .= $this->build_list_item_data( single_term_title( '', false ) );
 			}
 		} elseif ( is_404() ) {
 			// Do nothing on 404s.
