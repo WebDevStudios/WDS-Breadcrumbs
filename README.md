@@ -1,5 +1,7 @@
 # wds-breadcrumbs
-Breadcrumbs from WDS7 that everyone keeps reusing from project-to-project
+Simple breadcrumbs used on WebDevStudios.com
+
+<a href="https://webdevstudios.com/contact/"><img src="https://webdevstudios.com/wp-content/uploads/2018/04/wds-github-banner.png" alt="WebDevStudios. WordPress for big brands."></a>
 
 ## How to Use
 ```
